@@ -4,20 +4,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
     android:orientation="vertical"
+    android:gravity="center_horizontal"
     tools:context=".MainActivity">
 
-    <androidx.appcompat.widget.LinearLayoutCompat
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
 
         <TextView
             android:id="@+id/divce_scode"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
+
             android:text="Hello World!"
             android:textSize="@dimen/text_size" />
 
@@ -25,7 +26,6 @@
             android:id="@+id/temperature"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
             android:text="Hello World!"
             android:textSize="@dimen/text_size" />
 
@@ -33,7 +33,6 @@
             android:id="@+id/humidity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
             android:text="Hello World!"
             android:textSize="@dimen/text_size" />
 
@@ -41,7 +40,6 @@
             android:id="@+id/light"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
             android:text="Hello World!"
             android:textSize="@dimen/text_size" />
 
@@ -49,7 +47,6 @@
             android:id="@+id/moving_count_ten"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
             android:text="Hello World!"
             android:textSize="@dimen/text_size" />
 
@@ -57,7 +54,6 @@
             android:id="@+id/last_moving_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
             android:text="Hello World!"
             android:textSize="@dimen/text_size" />
 
@@ -65,7 +61,6 @@
             android:id="@+id/co2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
             android:text="Hello World!"
             android:textSize="@dimen/text_size" />
 
@@ -73,7 +68,6 @@
             android:id="@+id/tVOC"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
             android:text="Hello World!"
             android:textSize="@dimen/text_size" />
 
@@ -81,11 +75,35 @@
             android:id="@+id/data_reg_dtm"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
             android:text="Hello World!"
             android:textSize="@dimen/text_size" />
 
-    </androidx.appcompat.widget.LinearLayoutCompat>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center">
+
+            <EditText
+                android:id="@+id/number"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:hint="학번입력"/>
+
+            <EditText
+                android:id="@+id/name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="이름입력"/>
+
+            <Button
+                android:id="@+id/btn_ok"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="OK"/>
+        </LinearLayout>
+
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -97,6 +115,25 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="REQUEST" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/btn_start_service"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="START"/>
+
+        <Button
+            android:id="@+id/btn_stop_service"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="STOP"/>
 
     </LinearLayout>
 
@@ -133,4 +170,16 @@
         android:layout_margin="10dp"
         android:text="Hello World!"
         android:textSize="@dimen/text_size" />
+
+    <Button
+        android:id="@+id/btn_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Location"/>
+
+    <Button
+        android:id="@+id/btn_room_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Room_Status"/>
 </LinearLayout>

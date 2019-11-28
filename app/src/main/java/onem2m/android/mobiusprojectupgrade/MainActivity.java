@@ -13,6 +13,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -74,8 +75,23 @@ public class MainActivity extends AppCompatActivity {
     private Button btn_in;
     private Button btn_out;
 
+    private Button btn_start;
+    private Button btn_stop;
+
     private ProgressBar mProgressBar;
 
+    private String number;
+    private String name;
+
+    private EditText mNumber;
+    private EditText mName;
+    private Button mOk;
+
+    private Button mLocation;
+    private Button mRoomStatus;
+
+    private boolean flag = false;
+    private SharedPreferences pref;
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -95,6 +111,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        //Log.d("MYTAG", "MainActivity onStart");
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -103,11 +125,31 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_PHONE_STATE}, REQUEST_CODE);
         }
 
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        String id = pref.getString("doc_id",null);
-        if(id != null) {
+        mNumber = findViewById(R.id.number);
+        mName = findViewById(R.id.name);
+        mOk = findViewById(R.id.btn_ok);
+
+        mLocation = findViewById(R.id.btn_location);
+        mRoomStatus = findViewById(R.id.btn_room_status);
+        pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String id = pref.getString("doc_id", null);
+        if (id != null) {
             doc_id = id;
             Log.d("MYTAG", "pref doc_id : " + doc_id);
+        }
+
+        number = null;
+        name = null;
+
+        number = pref.getString("number", number);
+        name = pref.getString("name", name);
+
+        Log.d("MYTAG", "" + number);
+        Log.d("MYTAG", "" + name);
+
+        if(number != null && name != null) {
+            mNumber.setText(number);
+            mName.setText(name);
         }
 
         TelephonyManager telephonyManager;
@@ -127,11 +169,51 @@ public class MainActivity extends AppCompatActivity {
 
         btn_in = findViewById(R.id.btn_in);
         btn_out = findViewById(R.id.btn_out);
+        btn_start = findViewById(R.id.btn_start_service);
+        btn_stop = findViewById(R.id.btn_stop_service);
         inORout = findViewById(R.id.inORout);
+
+        mOk.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+                db.collection("userInfo").document(deviceId).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+
+                        if(documentSnapshot.get(deviceId) == null) {
+
+                            number = mNumber.getText().toString();
+                            name = mName.getText().toString();
+
+                            SharedPreferences.Editor editor = pref.edit();
+                            editor.putString("number", number);
+                            editor.putString("name", name);
+                            editor.apply();
+
+                            if (number != null && name != null) {
+                                Map<String, Object> data = new HashMap<>();
+                                data.put("number", number);
+                                data.put("name", name);
+                                data.put("deviceId", deviceId);
+
+                                FirebaseFirestore db = FirebaseFirestore.getInstance();
+                                db.collection("userInfo").document(deviceId).set(data);
+                                Log.d("MYTAG", "등록완료");
+                            }
+                        } else {
+                            Log.d("MYTAG", "이미 등록되었음");
+                        }
+                    }
+                });
+
+            }
+        });
 
         mProgressBar = findViewById(R.id.progress_bar);
 
-        if(doc_id == null) {
+        if (doc_id == null) {
             inORout.setText("강의실 밖");
         } else {
             inORout.setText("강의실 안");
@@ -143,6 +225,32 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 requestData();
+            }
+        });
+
+        btn_start.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), MyService.class);
+                String inORout = "out";
+                if (doc_id != null)
+                    inORout = "in";
+
+                intent.putExtra("inORout", inORout);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(intent);
+                } else {
+                    startService(intent);
+                }
+            }
+        });
+
+        btn_stop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), MyService.class);
+                Log.d("MYTAG", "stopService");
+                stopService(intent);
             }
         });
 
@@ -159,7 +267,7 @@ public class MainActivity extends AppCompatActivity {
                         boolean isExist = false;
 
                         for (int i = 0; i < documents.size(); i++) {
-                            if (documents.get(i).getData().get("deviceID").equals(deviceId)) {
+                            if (documents.get(i).getData().get("deviceId").equals(deviceId)) {
                                 doc_id = documents.get(i).getId();
                                 isExist = true;
                                 break;
@@ -168,7 +276,7 @@ public class MainActivity extends AppCompatActivity {
 
                         if (!isExist) {
                             Map<String, Object> user = new HashMap<>();
-                            user.put("deviceID", deviceId);
+                            user.put("deviceId", deviceId);
                             db.collection("devices").add(user).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                                 @Override
                                 public void onSuccess(DocumentReference documentReference) {
@@ -181,18 +289,6 @@ public class MainActivity extends AppCompatActivity {
 
                                     Log.d("MYTAG", "아이디 없어서 저장 성공");
                                     inORout.setText("강의실 안");
-
-                                    Intent intent = new Intent(getApplicationContext(), MyService.class);
-                                    String inORout = "out";
-                                    if(doc_id != null)
-                                        inORout = "in";
-
-                                    intent.putExtra("inORout", inORout);
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                        startForegroundService(intent);
-                                    } else {
-                                        startService(intent);
-                                    }
 
                                     mProgressBar.setVisibility(View.INVISIBLE);
                                 }
@@ -228,14 +324,26 @@ public class MainActivity extends AppCompatActivity {
                             mProgressBar.setVisibility(View.INVISIBLE);
                         }
                     });
-                    Intent intent = new Intent(getApplicationContext(), MyService.class);
-                    Log.d("MYTAG", "stopService");
-                    stopService(intent);
                 }
             }
         });
-    }
 
+        mLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), LocationActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        mRoomStatus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), RoomStatusActivity.class);
+                startActivity(intent);
+            }
+        });
+    }
     public void requestData() {
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(new Interceptor() {

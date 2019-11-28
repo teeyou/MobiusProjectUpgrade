@@ -96,7 +96,7 @@ public class MyService extends Service {
 
                 boolean isExist = false;
                 for (int i = 0; i < documents.size(); i++) {
-                    if(documents.get(i).getData().get("deviceID").equals(deviceId)) {
+                    if(documents.get(i).getData().get("deviceId").equals(deviceId)) {
                         isExist = true;
                         break;
                     }
